@@ -24,6 +24,7 @@ npm run build      # vue-tsc 型別檢查 + vite build
 npm run preview    # 預覽 production build
 npm test           # vitest watch mode
 npm run test:run   # vitest 單次執行
+npx vitest run path/to/file.test.ts  # 執行單一測試檔
 ```
 
 ## Architecture
@@ -40,6 +41,10 @@ src/
 ├── router/                  # hash mode router（/, /docker, /k9s）
 └── views/                   # HomeView, DockerView, K9sView
 ```
+
+**測試設定：** 測試使用獨立的 `vitest.config.ts`（不含 Tailwind plugin），環境為 jsdom，`@` alias 與主設定一致。
+
+**路由：** 除 `/`, `/docker`, `/k9s` 外，`/:pathMatch(.*)*` catch-all 會 redirect 回首頁。
 
 **資料流：** `data/*.ts` → `*View.vue` → `SectionBlock` → `CommandCard` / `ConceptCard`
 
