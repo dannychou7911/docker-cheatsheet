@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Docker Cheatsheet — 新手常用指令速查表</title>
+  <meta name="description" content="專為 Docker 新手設計的常用指令速查表，包含容器、映像檔、Volume、Network 等分類指令與範例說明。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            dock: {
+              bg: '#0F172A',
+              surface: '#1E293B',
+              surface2: '#334155',
+              accent: '#38BDF8',
+              green: '#22C55E',
+              yellow: '#FACC15',
+              red: '#F87171',
+              purple: '#A78BFA',
+              orange: '#FB923C',
+              text: '#F8FAFC',
+              muted: '#94A3B8',
+              dim: '#64748B',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0F172A; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* Sidebar active link */
+    .toc-link.active {
+      color: #38BDF8;
+      border-left-color: #38BDF8;
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    /* Copy button feedback */
+    .copy-btn.copied svg:first-child { display: none; }
+    .copy-btn.copied svg:last-child { display: block; }
+    .copy-btn svg:last-child { display: none; }
+
+    /* Search highlight */
+    mark {
+      background: rgba(56, 189, 248, 0.25);
+      color: #F8FAFC;
+      border-radius: 2px;
+      padding: 0 2px;
+    }
+
+    /* Mobile sidebar */
+    #sidebar.open { transform: translateX(0); }
+
+    /* Smooth code block */
+    pre { tab-size: 2; }
+
+    /* Tooltip */
+    [data-tooltip]:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1E293B;
+      color: #F8FAFC;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      z-index: 50;
+      border: 1px solid #334155;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-dock-bg text-dock-text font-sans antialiased">
+
+  <!-- Skip to content -->
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-dock-accent focus:text-dock-bg focus:px-4 focus:py-2 focus:rounded-lg focus:font-semibold">
+    跳到主要內容
+  </a>
+
+  <!-- Mobile Header -->
+  <header class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-dock-bg/95 backdrop-blur-sm border-b border-dock-surface2">
+    <div class="flex items-center justify-between px-4 h-14">
+      <button id="menuBtn" class="cursor-pointer p-2 -ml-2 rounded-lg hover:bg-dock-surface transition-colors duration-200" aria-label="開啟目錄">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 text-dock-accent" viewBox="0 0 24 24" fill="currentColor"><path d="M13.983 11.078h2.119a.186.186 0 0 0 .186-.185V9.006a.186.186 0 0 0-.186-.186h-2.119a.186.186 0 0 0-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 0 0 .186-.186V3.574a.186.186 0 0 0-.186-.185h-2.118a.186.186 0 0 0-.185.185v1.888c0 .102.082.185.185.186m0 2.716h2.118a.187.187 0 0 0 .186-.186V6.29a.186.186 0 0 0-.186-.185h-2.118a.186.186 0 0 0-.185.185v1.887c0 .102.082.186.185.186m-2.93 0h2.12a.186.186 0 0 0 .184-.186V6.29a.186.186 0 0 0-.185-.185H8.1a.186.186 0 0 0-.185.185v1.887c0 .102.083.186.185.186m-2.964 0h2.119a.186.186 0 0 0 .185-.186V6.29a.186.186 0 0 0-.185-.185H5.136a.186.186 0 0 0-.186.185v1.887c0 .102.084.186.186.186m5.893 2.715h2.118a.186.186 0 0 0 .186-.185V9.006a.186.186 0 0 0-.186-.186h-2.118a.186.186 0 0 0-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.186.186 0 0 0 .184-.185V9.006a.186.186 0 0 0-.184-.186h-2.12a.186.186 0 0 0-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.186.186 0 0 0 .185-.185V9.006a.186.186 0 0 0-.185-.186H5.136a.186.186 0 0 0-.186.185v1.888c0 .102.084.185.186.185m-2.92 0h2.12a.186.186 0 0 0 .184-.185V9.006a.186.186 0 0 0-.184-.186h-2.12a.186.186 0 0 0-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 0 0-.75.748 11.376 11.376 0 0 0 .692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 0 0 3.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z"/></svg>
+        <span class="font-semibold text-sm">Docker Cheatsheet</span>
+      </div>
+      <div class="w-9"></div>
+    </div>
+  </header>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div id="overlay" class="lg:hidden fixed inset-0 bg-black/50 z-50 hidden" aria-hidden="true"></div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-dock-bg border-r border-dock-surface2 z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col">
+    <!-- Logo -->
+    <div class="p-5 border-b border-dock-surface2">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-dock-accent/10 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-dock-accent" viewBox="0 0 24 24" fill="currentColor"><path d="M13.983 11.078h2.119a.186.186 0 0 0 .186-.185V9.006a.186.186 0 0 0-.186-.186h-2.119a.186.186 0 0 0-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 0 0 .186-.186V3.574a.186.186 0 0 0-.186-.185h-2.118a.186.186 0 0 0-.185.185v1.888c0 .102.082.185.185.186m0 2.716h2.118a.187.187 0 0 0 .186-.186V6.29a.186.186 0 0 0-.186-.185h-2.118a.186.186 0 0 0-.185.185v1.887c0 .102.082.186.185.186m-2.93 0h2.12a.186.186 0 0 0 .184-.186V6.29a.186.186 0 0 0-.185-.185H8.1a.186.186 0 0 0-.185.185v1.887c0 .102.083.186.185.186m-2.964 0h2.119a.186.186 0 0 0 .185-.186V6.29a.186.186 0 0 0-.185-.185H5.136a.186.186 0 0 0-.186.185v1.887c0 .102.084.186.186.186m5.893 2.715h2.118a.186.186 0 0 0 .186-.185V9.006a.186.186 0 0 0-.186-.186h-2.118a.186.186 0 0 0-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.186.186 0 0 0 .184-.185V9.006a.186.186 0 0 0-.184-.186h-2.12a.186.186 0 0 0-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.186.186 0 0 0 .185-.185V9.006a.186.186 0 0 0-.185-.186H5.136a.186.186 0 0 0-.186.185v1.888c0 .102.084.185.186.185m-2.92 0h2.12a.186.186 0 0 0 .184-.185V9.006a.186.186 0 0 0-.184-.186h-2.12a.186.186 0 0 0-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 0 0-.75.748 11.376 11.376 0 0 0 .692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 0 0 3.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z"/></svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-base leading-tight">Docker Cheatsheet</h1>
+          <p class="text-dock-dim text-xs mt-0.5">新手常用指令速查表</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="p-4">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dock-dim pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="搜尋指令... (Ctrl+K)"
+          class="w-full bg-dock-surface border border-dock-surface2 rounded-lg pl-9 pr-3 py-2 text-sm text-dock-text placeholder:text-dock-dim focus:outline-none focus:border-dock-accent focus:ring-1 focus:ring-dock-accent/50 transition-colors duration-200"
+          aria-label="搜尋 Docker 指令"
+        />
+      </div>
+      <div id="searchHint" class="hidden mt-2 px-1 text-xs text-dock-dim"></div>
+    </div>
+
+    <!-- TOC -->
+    <nav id="toc" class="flex-1 overflow-y-auto px-3 pb-4" aria-label="目錄">
+      <ul class="space-y-0.5">
+        <li><a href="#basics" class="toc-link flex items-center gap-2.5 px-3 py-2 text-sm text-dock-muted rounded-md border-l-2 border-transparent hover:bg-dock-surface hover:text-dock-text transition-all duration-200 cursor-pointer"><span class="w-1.5 h-1.5 rounded-full bg-dock-accent flex-shrink-0"></span>基礎指令</a></li>
+        <li><a href="#container" class="toc-link flex items-center gap-2.5 px-3 py-2 text-sm text-dock-muted rounded-md border-l-2 border-transparent hover:bg-dock-surface hover:text-dock-text transition-all duration-200 cursor-pointer"><span class="w-1.5 h-1.5 rounded-full bg-dock-green flex-shrink-0"></span>容器管理</a></li>
+        <li><a href="#image" class="toc-link flex items-center gap-2.5 px-3 py-2 text-sm text-dock-muted rounded-md border-l-2 border-transparent hover:bg-dock-surface hover:text-dock-text transition-all duration-200 cursor-pointer"><span class="w-1.5 h-1.5 rounded-full bg-dock-purple flex-shrink-0"></span>映像檔管理</a></li>
+        <li><a href="#volume" class="toc-link flex items-center gap-2.5 px-3 py-2 text-sm text-dock-muted rounded-md border-l-2 border-transparent hover:bg-dock-surface hover:text-dock-text transition-all duration-200 cursor-pointer"><span class="w-1.5 h-1.5 rounded-full bg-dock-yellow flex-shrink-0"></span>Volume 資料管理</a></li>
+        <li><a href="#network" class="toc-link flex items-center gap-2.5 px-3 py-2 text-sm text-dock-muted rounded-md border-l-2 border-transparent hover:bg-dock-surface hover:text-dock-text transition-all duration-200 cursor-pointer"><span class="w-1.5 h-1.5 rounded-full bg-dock-orange flex-shrink-0"></span>Network 網路</a></li>
+        <li><a href="#compose" class="toc-link flex items-center gap-2.5 px-3 py-2 text-sm text-dock-muted rounded-md border-l-2 border-transparent hover:bg-dock-surface hover:text-dock-text transition-all duration-200 cursor-pointer"><span class="w-1.5 h-1.5 rounded-full bg-dock-red flex-shrink-0"></span>Docker Compose</a></li>
+        <li><a href="#compose-yaml" class="toc-link flex items-center gap-2.5 px-3 py-2 text-sm text-dock-muted rounded-md border-l-2 border-transparent hover:bg-dock-surface hover:text-dock-text transition-all duration-200 cursor-pointer pl-7"><span class="w-1 h-1 rounded-full bg-dock-red/60 flex-shrink-0"></span>Compose YAML 結構</a></li>
+        <li><a href="#cleanup" class="toc-link flex items-center gap-2.5 px-3 py-2 text-sm text-dock-muted rounded-md border-l-2 border-transparent hover:bg-dock-surface hover:text-dock-text transition-all duration-200 cursor-pointer"><span class="w-1.5 h-1.5 rounded-full bg-dock-dim flex-shrink-0"></span>清理與維護</a></li>
+        <li><a href="#dockerfile" class="toc-link flex items-center gap-2.5 px-3 py-2 text-sm text-dock-muted rounded-md border-l-2 border-transparent hover:bg-dock-surface hover:text-dock-text transition-all duration-200 cursor-pointer"><span class="w-1.5 h-1.5 rounded-full bg-dock-accent flex-shrink-0 opacity-60"></span>Dockerfile 常用指令</a></li>
+      </ul>
+    </nav>
+
+    <!-- Footer -->
+    <div class="p-4 border-t border-dock-surface2 text-xs text-dock-dim">
+      <p>適用 Docker 20.10+</p>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main id="main" class="lg:ml-72 pt-14 lg:pt-0">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+
+      <!-- Hero -->
+      <section class="mb-12">
+        <div class="bg-gradient-to-br from-dock-surface to-dock-bg border border-dock-surface2 rounded-2xl p-6 sm:p-8">
+          <div class="flex items-start gap-4">
+            <div class="hidden sm:flex w-12 h-12 rounded-xl bg-dock-accent/10 items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-6 h-6 text-dock-accent" viewBox="0 0 24 24" fill="currentColor"><path d="M13.983 11.078h2.119a.186.186 0 0 0 .186-.185V9.006a.186.186 0 0 0-.186-.186h-2.119a.186.186 0 0 0-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 0 0 .186-.186V3.574a.186.186 0 0 0-.186-.185h-2.118a.186.186 0 0 0-.185.185v1.888c0 .102.082.185.185.186m0 2.716h2.118a.187.187 0 0 0 .186-.186V6.29a.186.186 0 0 0-.186-.185h-2.118a.186.186 0 0 0-.185.185v1.887c0 .102.082.186.185.186m-2.93 0h2.12a.186.186 0 0 0 .184-.186V6.29a.186.186 0 0 0-.185-.185H8.1a.186.186 0 0 0-.185.185v1.887c0 .102.083.186.185.186m-2.964 0h2.119a.186.186 0 0 0 .185-.186V6.29a.186.186 0 0 0-.185-.185H5.136a.186.186 0 0 0-.186.185v1.887c0 .102.084.186.186.186m5.893 2.715h2.118a.186.186 0 0 0 .186-.185V9.006a.186.186 0 0 0-.186-.186h-2.118a.186.186 0 0 0-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.186.186 0 0 0 .184-.185V9.006a.186.186 0 0 0-.184-.186h-2.12a.186.186 0 0 0-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.186.186 0 0 0 .185-.185V9.006a.186.186 0 0 0-.185-.186H5.136a.186.186 0 0 0-.186.185v1.888c0 .102.084.185.186.185m-2.92 0h2.12a.186.186 0 0 0 .184-.185V9.006a.186.186 0 0 0-.184-.186h-2.12a.186.186 0 0 0-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 0 0-.75.748 11.376 11.376 0 0 0 .692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 0 0 3.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z"/></svg>
+            </div>
+            <div>
+              <h2 class="text-2xl sm:text-3xl font-bold mb-2">Docker 新手常用指令速查表</h2>
+              <p class="text-dock-muted text-sm sm:text-base leading-relaxed max-w-2xl">
+                收錄 Docker 日常開發最常用的指令，每個指令都附有<strong class="text-dock-text">白話說明</strong>與<strong class="text-dock-text">實際範例</strong>，方便快速查找與複製使用。
+              </p>
+              <div class="flex flex-wrap gap-2 mt-4">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-dock-accent/10 text-dock-accent text-xs font-medium rounded-md">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  點擊複製指令
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-dock-green/10 text-dock-green text-xs font-medium rounded-md">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  Ctrl+K 搜尋
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Section: 基礎指令 ===== -->
+      <section id="basics" class="cmd-section mb-12 scroll-mt-20 lg:scroll-mt-8">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="w-2 h-2 rounded-full bg-dock-accent"></span>
+          <h2 class="text-xl font-bold">基礎指令</h2>
+          <span class="text-xs text-dock-dim bg-dock-surface px-2 py-0.5 rounded-full">入門必學</span>
+        </div>
+        <div class="space-y-3">
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-accent/30 transition-colors duration-200" data-cmd="docker version" data-desc="查看 Docker 版本">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-accent font-medium">docker version</code>
+                </div>
+                <p class="text-sm text-dock-muted">查看 Docker 客戶端與伺服器的版本資訊，確認 Docker 是否正確安裝。</p>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-accent hover:bg-dock-accent/10 transition-colors duration-200" data-copy="docker version" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-accent/30 transition-colors duration-200" data-cmd="docker info" data-desc="查看 Docker 系統資訊">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-accent font-medium">docker info</code>
+                </div>
+                <p class="text-sm text-dock-muted">顯示 Docker 系統的詳細資訊，包含容器數量、映像檔數量、儲存驅動等。</p>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-accent hover:bg-dock-accent/10 transition-colors duration-200" data-copy="docker info" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-accent/30 transition-colors duration-200" data-cmd="docker help" data-desc="查看幫助文件">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-accent font-medium">docker help</code>
+                </div>
+                <p class="text-sm text-dock-muted">列出所有可用的 Docker 指令。也可以用 <code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">docker &lt;指令&gt; --help</code> 查看特定指令的用法。</p>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-accent hover:bg-dock-accent/10 transition-colors duration-200" data-copy="docker help" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== Section: 容器管理 ===== -->
+      <section id="container" class="cmd-section mb-12 scroll-mt-20 lg:scroll-mt-8">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="w-2 h-2 rounded-full bg-dock-green"></span>
+          <h2 class="text-xl font-bold">容器管理</h2>
+          <span class="text-xs text-dock-dim bg-dock-surface px-2 py-0.5 rounded-full">最常用</span>
+        </div>
+        <div class="space-y-3">
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-green/30 transition-colors duration-200" data-cmd="docker run" data-desc="建立並啟動容器">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-green font-medium">docker run [選項] &lt;映像檔&gt;</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">從映像檔建立一個新的容器並啟動它。這是最常用的指令。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 基本啟動</span></div>
+                  <div><span class="text-dock-yellow">docker run</span> nginx</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 背景執行 + 取名 + port 對應</span></div>
+                  <div><span class="text-dock-yellow">docker run</span> <span class="text-dock-accent">-d</span> <span class="text-dock-accent">--name</span> my-web <span class="text-dock-accent">-p</span> 8080:80 nginx</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 互動模式（進入容器的終端）</span></div>
+                  <div><span class="text-dock-yellow">docker run</span> <span class="text-dock-accent">-it</span> ubuntu bash</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 用完即刪</span></div>
+                  <div><span class="text-dock-yellow">docker run</span> <span class="text-dock-accent">--rm</span> alpine echo "Hello"</div>
+                </div>
+                <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-dock-dim">
+                  <span><code class="text-dock-accent">-d</code> 背景執行</span>
+                  <span><code class="text-dock-accent">-p</code> 主機Port:容器Port</span>
+                  <span><code class="text-dock-accent">-it</code> 互動模式</span>
+                  <span><code class="text-dock-accent">--name</code> 指定名稱</span>
+                  <span><code class="text-dock-accent">--rm</code> 停止後自動刪除</span>
+                  <span><code class="text-dock-accent">-e</code> 設定環境變數</span>
+                  <span><code class="text-dock-accent">-v</code> 掛載 Volume</span>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-green hover:bg-dock-green/10 transition-colors duration-200" data-copy="docker run -d --name my-web -p 8080:80 nginx" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-green/30 transition-colors duration-200" data-cmd="docker ps" data-desc="查看運行中的容器">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-green font-medium">docker ps [選項]</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">列出容器清單。預設只顯示運行中的，加 <code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">-a</code> 可看到全部（包含已停止的）。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 運行中的容器</span></div>
+                  <div><span class="text-dock-yellow">docker ps</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 全部容器（含已停止）</span></div>
+                  <div><span class="text-dock-yellow">docker ps</span> <span class="text-dock-accent">-a</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 只顯示容器 ID</span></div>
+                  <div><span class="text-dock-yellow">docker ps</span> <span class="text-dock-accent">-q</span></div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-green hover:bg-dock-green/10 transition-colors duration-200" data-copy="docker ps -a" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-green/30 transition-colors duration-200" data-cmd="docker start docker stop docker restart" data-desc="啟動 停止 重啟容器">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-green font-medium">docker start | stop | restart &lt;容器&gt;</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">控制已存在容器的運行狀態。可以用容器名稱或容器 ID。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-yellow">docker stop</span> my-web</div>
+                  <div><span class="text-dock-yellow">docker start</span> my-web</div>
+                  <div><span class="text-dock-yellow">docker restart</span> my-web</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-green hover:bg-dock-green/10 transition-colors duration-200" data-copy="docker stop my-web" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-green/30 transition-colors duration-200" data-cmd="docker rm" data-desc="刪除容器">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-green font-medium">docker rm [選項] &lt;容器&gt;</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">刪除一個或多個已停止的容器。加 <code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">-f</code> 可強制刪除運行中的容器。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-yellow">docker rm</span> my-web</div>
+                  <div><span class="text-dock-dim"># 強制刪除（含運行中的）</span></div>
+                  <div><span class="text-dock-yellow">docker rm</span> <span class="text-dock-accent">-f</span> my-web</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-green hover:bg-dock-green/10 transition-colors duration-200" data-copy="docker rm my-web" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-green/30 transition-colors duration-200" data-cmd="docker exec" data-desc="在容器內執行指令">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-green font-medium">docker exec [選項] &lt;容器&gt; &lt;指令&gt;</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">在一個「正在運行」的容器裡面執行指令，常用來進入容器的 shell。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 進入容器的 bash shell</span></div>
+                  <div><span class="text-dock-yellow">docker exec</span> <span class="text-dock-accent">-it</span> my-web bash</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 在容器裡執行單一指令</span></div>
+                  <div><span class="text-dock-yellow">docker exec</span> my-web ls /var/log</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-green hover:bg-dock-green/10 transition-colors duration-200" data-copy="docker exec -it my-web bash" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-green/30 transition-colors duration-200" data-cmd="docker logs" data-desc="查看容器日誌">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-green font-medium">docker logs [選項] &lt;容器&gt;</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">查看容器輸出的日誌，debug 時超常用。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 查看全部日誌</span></div>
+                  <div><span class="text-dock-yellow">docker logs</span> my-web</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 即時追蹤新的日誌輸出</span></div>
+                  <div><span class="text-dock-yellow">docker logs</span> <span class="text-dock-accent">-f</span> my-web</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 只看最後 50 行</span></div>
+                  <div><span class="text-dock-yellow">docker logs</span> <span class="text-dock-accent">--tail</span> 50 my-web</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-green hover:bg-dock-green/10 transition-colors duration-200" data-copy="docker logs -f my-web" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-green/30 transition-colors duration-200" data-cmd="docker inspect" data-desc="查看容器詳細資訊">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-green font-medium">docker inspect &lt;容器|映像檔&gt;</code>
+                </div>
+                <p class="text-sm text-dock-muted">以 JSON 格式輸出容器或映像檔的詳細設定資訊（IP、掛載、環境變數等）。</p>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-green hover:bg-dock-green/10 transition-colors duration-200" data-copy="docker inspect my-web" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== Section: 映像檔管理 ===== -->
+      <section id="image" class="cmd-section mb-12 scroll-mt-20 lg:scroll-mt-8">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="w-2 h-2 rounded-full bg-dock-purple"></span>
+          <h2 class="text-xl font-bold">映像檔管理</h2>
+        </div>
+        <div class="space-y-3">
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-purple/30 transition-colors duration-200" data-cmd="docker pull" data-desc="下載映像檔">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-purple font-medium">docker pull &lt;映像檔&gt;[:tag]</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">從 Docker Hub（或其他 registry）下載映像檔到本地。不指定 tag 預設為 <code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">latest</code>。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-yellow">docker pull</span> nginx</div>
+                  <div><span class="text-dock-yellow">docker pull</span> node:18-alpine</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-purple hover:bg-dock-purple/10 transition-colors duration-200" data-copy="docker pull nginx" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-purple/30 transition-colors duration-200" data-cmd="docker images" data-desc="列出本地映像檔">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-purple font-medium">docker images</code>
+                </div>
+                <p class="text-sm text-dock-muted">列出本地已下載的所有映像檔，包含名稱、tag、大小等資訊。</p>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-purple hover:bg-dock-purple/10 transition-colors duration-200" data-copy="docker images" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-purple/30 transition-colors duration-200" data-cmd="docker build" data-desc="建構映像檔">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-purple font-medium">docker build [選項] &lt;路徑&gt;</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">根據 Dockerfile 建構一個新的映像檔。<code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">.</code> 代表當前目錄。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 建構並加上 tag</span></div>
+                  <div><span class="text-dock-yellow">docker build</span> <span class="text-dock-accent">-t</span> my-app:1.0 .</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 不使用快取</span></div>
+                  <div><span class="text-dock-yellow">docker build</span> <span class="text-dock-accent">--no-cache</span> <span class="text-dock-accent">-t</span> my-app:1.0 .</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-purple hover:bg-dock-purple/10 transition-colors duration-200" data-copy="docker build -t my-app:1.0 ." aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-purple/30 transition-colors duration-200" data-cmd="docker rmi" data-desc="刪除映像檔">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-purple font-medium">docker rmi &lt;映像檔&gt;</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">刪除本地的映像檔。如果有容器正在使用，需要先刪除容器或加 <code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">-f</code>。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-yellow">docker rmi</span> nginx</div>
+                  <div><span class="text-dock-yellow">docker rmi</span> my-app:1.0</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-purple hover:bg-dock-purple/10 transition-colors duration-200" data-copy="docker rmi nginx" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-purple/30 transition-colors duration-200" data-cmd="docker tag docker push" data-desc="標記與推送映像檔">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-purple font-medium">docker tag / docker push</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">先用 tag 給映像檔加上 registry 路徑，再 push 上傳到遠端 registry。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-yellow">docker tag</span> my-app:1.0 username/my-app:1.0</div>
+                  <div><span class="text-dock-yellow">docker push</span> username/my-app:1.0</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-purple hover:bg-dock-purple/10 transition-colors duration-200" data-copy="docker tag my-app:1.0 username/my-app:1.0" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== Section: Volume ===== -->
+      <section id="volume" class="cmd-section mb-12 scroll-mt-20 lg:scroll-mt-8">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="w-2 h-2 rounded-full bg-dock-yellow"></span>
+          <h2 class="text-xl font-bold">Volume 資料管理</h2>
+        </div>
+        <p class="text-sm text-dock-muted mb-4 -mt-2">Volume 是 Docker 中保存資料的機制，容器刪除後資料仍然存在。</p>
+        <div class="space-y-3">
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-yellow/30 transition-colors duration-200" data-cmd="docker volume create docker volume ls docker volume rm docker volume inspect" data-desc="Volume 基本操作">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-yellow font-medium">docker volume create | ls | rm | inspect</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">管理 Docker Volume 的基本指令。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 建立一個 volume</span></div>
+                  <div><span class="text-dock-yellow">docker volume create</span> my-data</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 列出所有 volume</span></div>
+                  <div><span class="text-dock-yellow">docker volume ls</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 查看 volume 詳細資訊</span></div>
+                  <div><span class="text-dock-yellow">docker volume inspect</span> my-data</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 刪除 volume</span></div>
+                  <div><span class="text-dock-yellow">docker volume rm</span> my-data</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-yellow hover:bg-dock-yellow/10 transition-colors duration-200" data-copy="docker volume ls" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-yellow/30 transition-colors duration-200" data-cmd="docker run -v" data-desc="掛載 Volume 到容器">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-yellow font-medium">docker run -v &lt;來源&gt;:&lt;目的&gt;</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">啟動容器時掛載 Volume 或本機資料夾。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 掛載具名 volume</span></div>
+                  <div><span class="text-dock-yellow">docker run</span> <span class="text-dock-accent">-v</span> my-data:/app/data nginx</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 掛載本機資料夾（bind mount）</span></div>
+                  <div><span class="text-dock-yellow">docker run</span> <span class="text-dock-accent">-v</span> $(pwd):/app nginx</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 唯讀掛載</span></div>
+                  <div><span class="text-dock-yellow">docker run</span> <span class="text-dock-accent">-v</span> $(pwd)/config:/app/config:ro nginx</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-yellow hover:bg-dock-yellow/10 transition-colors duration-200" data-copy="docker run -v my-data:/app/data nginx" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== Section: Network ===== -->
+      <section id="network" class="cmd-section mb-12 scroll-mt-20 lg:scroll-mt-8">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="w-2 h-2 rounded-full bg-dock-orange"></span>
+          <h2 class="text-xl font-bold">Network 網路</h2>
+        </div>
+        <p class="text-sm text-dock-muted mb-4 -mt-2">Docker Network 讓容器之間可以互相通訊，也可以隔離不同服務。</p>
+        <div class="space-y-3">
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-orange/30 transition-colors duration-200" data-cmd="docker network create docker network ls docker network rm docker network inspect" data-desc="Network 基本操作">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-orange font-medium">docker network create | ls | rm | inspect</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">管理 Docker 網路的基本指令。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 建立自訂網路</span></div>
+                  <div><span class="text-dock-yellow">docker network create</span> my-net</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 列出所有網路</span></div>
+                  <div><span class="text-dock-yellow">docker network ls</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 查看網路詳細資訊</span></div>
+                  <div><span class="text-dock-yellow">docker network inspect</span> my-net</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 刪除網路</span></div>
+                  <div><span class="text-dock-yellow">docker network rm</span> my-net</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-orange hover:bg-dock-orange/10 transition-colors duration-200" data-copy="docker network ls" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-orange/30 transition-colors duration-200" data-cmd="docker network connect docker network disconnect" data-desc="連接或斷開容器與網路">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-orange font-medium">docker network connect | disconnect</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">將容器加入或移出某個網路，讓容器可以互相溝通。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 將容器加入網路</span></div>
+                  <div><span class="text-dock-yellow">docker network connect</span> my-net my-web</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 啟動時直接指定網路</span></div>
+                  <div><span class="text-dock-yellow">docker run</span> <span class="text-dock-accent">--network</span> my-net nginx</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-orange hover:bg-dock-orange/10 transition-colors duration-200" data-copy="docker network connect my-net my-web" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== Section: Docker Compose ===== -->
+      <section id="compose" class="cmd-section mb-12 scroll-mt-20 lg:scroll-mt-8">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="w-2 h-2 rounded-full bg-dock-red"></span>
+          <h2 class="text-xl font-bold">Docker Compose</h2>
+        </div>
+        <p class="text-sm text-dock-muted mb-4 -mt-2">用一個 <code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">docker-compose.yml</code> 檔案一次管理多個容器，非常適合開發環境。</p>
+        <div class="space-y-3">
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-red/30 transition-colors duration-200" data-cmd="docker compose up" data-desc="啟動所有服務">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-red font-medium">docker compose up [選項]</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">根據 compose 檔案啟動所有定義的服務。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 背景啟動所有服務</span></div>
+                  <div><span class="text-dock-yellow">docker compose up</span> <span class="text-dock-accent">-d</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 重新建構映像檔後啟動</span></div>
+                  <div><span class="text-dock-yellow">docker compose up</span> <span class="text-dock-accent">-d --build</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 只啟動特定服務</span></div>
+                  <div><span class="text-dock-yellow">docker compose up</span> <span class="text-dock-accent">-d</span> web db</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-red hover:bg-dock-red/10 transition-colors duration-200" data-copy="docker compose up -d" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-red/30 transition-colors duration-200" data-cmd="docker compose down" data-desc="停止並移除所有服務">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-red font-medium">docker compose down [選項]</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">停止所有服務並移除容器、網路。加選項可一併清除 volume 和映像檔。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 停止並移除容器、網路</span></div>
+                  <div><span class="text-dock-yellow">docker compose down</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 連 volume 一起刪除</span></div>
+                  <div><span class="text-dock-yellow">docker compose down</span> <span class="text-dock-accent">-v</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 連映像檔一起刪除</span></div>
+                  <div><span class="text-dock-yellow">docker compose down</span> <span class="text-dock-accent">--rmi all</span></div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-red hover:bg-dock-red/10 transition-colors duration-200" data-copy="docker compose down" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-red/30 transition-colors duration-200" data-cmd="docker compose ps docker compose logs docker compose exec" data-desc="查看狀態 日誌 執行指令">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-red font-medium">docker compose ps | logs | exec</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">日常管理 Compose 服務的常用指令。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 查看服務狀態</span></div>
+                  <div><span class="text-dock-yellow">docker compose ps</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 追蹤所有服務的日誌</span></div>
+                  <div><span class="text-dock-yellow">docker compose logs</span> <span class="text-dock-accent">-f</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 進入特定服務的 shell</span></div>
+                  <div><span class="text-dock-yellow">docker compose exec</span> web bash</div>
+                  <div class="pt-1"><span class="text-dock-dim"># 重啟單一服務</span></div>
+                  <div><span class="text-dock-yellow">docker compose restart</span> web</div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-red hover:bg-dock-red/10 transition-colors duration-200" data-copy="docker compose logs -f" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== Section: Compose YAML 結構 ===== -->
+      <section id="compose-yaml" class="cmd-section mb-12 scroll-mt-20 lg:scroll-mt-8">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="w-2 h-2 rounded-full bg-dock-red opacity-60"></span>
+          <h2 class="text-xl font-bold">Compose YAML 結構</h2>
+          <span class="text-xs text-dock-dim bg-dock-surface px-2 py-0.5 rounded-full">docker-compose.yml</span>
+        </div>
+        <p class="text-sm text-dock-muted mb-4 -mt-2">
+          <code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">docker-compose.yml</code>（或 <code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">compose.yml</code>）定義了多容器應用的完整配置。以下是各區塊的說明。
+        </p>
+        <div class="space-y-3">
+
+          <!-- 完整範例 -->
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-red/30 transition-colors duration-200" data-cmd="docker-compose.yml compose.yml yaml" data-desc="完整範例 docker-compose yaml 結構">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-red font-medium">完整範例</code>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-dock-green/10 text-dock-green font-medium">可直接使用</span>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">一個典型的前後端 + 資料庫的 Compose 設定範例，涵蓋最常見的配置項目。</p>
+                <div class="bg-dock-bg rounded-lg p-4 font-mono text-xs space-y-1 overflow-x-auto">
+                  <div><span class="text-dock-dim"># docker-compose.yml</span></div>
+                  <div class="pt-1"><span class="text-dock-red font-semibold">services:</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-accent font-semibold">web:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">build:</span> ./frontend</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">ports:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="text-dock-green">"3000:3000"</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">depends_on:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- api</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">environment:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="text-dock-green">VITE_API_URL=http://api:4000</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">networks:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- app-net</div>
+                  <div class="pt-2">&nbsp;&nbsp;<span class="text-dock-accent font-semibold">api:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">build:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">context:</span> ./backend</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">dockerfile:</span> Dockerfile</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">ports:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="text-dock-green">"4000:4000"</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">volumes:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- ./backend/src:/app/src</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">env_file:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- .env</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">depends_on:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- db</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">restart:</span> unless-stopped</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">networks:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- app-net</div>
+                  <div class="pt-2">&nbsp;&nbsp;<span class="text-dock-accent font-semibold">db:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">image:</span> postgres:16-alpine</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">ports:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="text-dock-green">"5432:5432"</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">environment:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="text-dock-green">POSTGRES_USER=admin</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="text-dock-green">POSTGRES_PASSWORD=secret</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- <span class="text-dock-green">POSTGRES_DB=myapp</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">volumes:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- db-data:/var/lib/postgresql/data</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">restart:</span> unless-stopped</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">networks:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- app-net</div>
+                  <div class="pt-2"><span class="text-dock-red font-semibold">volumes:</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-accent">db-data:</span></div>
+                  <div class="pt-2"><span class="text-dock-red font-semibold">networks:</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-accent">app-net:</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- services -->
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-red/30 transition-colors duration-200" data-cmd="services service 服務" data-desc="services 定義所有服務容器">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-red font-medium">services:</code>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-dock-red/10 text-dock-red font-medium">必填</span>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">定義所有要啟動的服務（容器）。每個 key 就是服務名稱，容器之間可以用這個名稱互相溝通。</p>
+                <div class="mt-2 space-y-2 text-xs">
+                  <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2">
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">image:</code>
+                    <span class="text-dock-muted py-1">使用現成的映像檔（例如 <code class="text-dock-text bg-dock-surface2 px-1 rounded">nginx</code>、<code class="text-dock-text bg-dock-surface2 px-1 rounded">postgres:16</code>）</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">build:</code>
+                    <span class="text-dock-muted py-1">從 Dockerfile 建構映像檔，可以是路徑字串或物件（含 <code class="text-dock-text bg-dock-surface2 px-1 rounded">context</code> 和 <code class="text-dock-text bg-dock-surface2 px-1 rounded">dockerfile</code>）</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">ports:</code>
+                    <span class="text-dock-muted py-1">port 對應，格式 <code class="text-dock-text bg-dock-surface2 px-1 rounded">"主機:容器"</code>，讓外部可以連到容器</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">volumes:</code>
+                    <span class="text-dock-muted py-1">掛載資料，<code class="text-dock-text bg-dock-surface2 px-1 rounded">./本地路徑:/容器路徑</code> 或使用具名 volume</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">environment:</code>
+                    <span class="text-dock-muted py-1">設定環境變數，可以用陣列 <code class="text-dock-text bg-dock-surface2 px-1 rounded">- KEY=VALUE</code> 或物件 <code class="text-dock-text bg-dock-surface2 px-1 rounded">KEY: VALUE</code></span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">env_file:</code>
+                    <span class="text-dock-muted py-1">從 <code class="text-dock-text bg-dock-surface2 px-1 rounded">.env</code> 檔案載入環境變數，適合管理敏感資料</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- depends_on -->
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-red/30 transition-colors duration-200" data-cmd="depends_on 啟動順序 相依" data-desc="depends_on 服務啟動順序">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-red font-medium">depends_on:</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">控制服務的啟動順序。例如 API 需要等資料庫先啟動。注意：它只保證「啟動順序」，不保證服務「已準備好」。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 基本用法：api 會在 db 之後啟動</span></div>
+                  <div><span class="text-dock-accent">api:</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-yellow">depends_on:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;- db</div>
+                  <div class="pt-2"><span class="text-dock-dim"># 進階：等到 db 健康檢查通過才啟動</span></div>
+                  <div><span class="text-dock-accent">api:</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-yellow">depends_on:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-accent">db:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">condition:</span> service_healthy</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- restart -->
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-red/30 transition-colors duration-200" data-cmd="restart 重啟策略" data-desc="restart 容器重啟策略">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-red font-medium">restart:</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">設定容器異常退出時的重啟策略。</p>
+                <div class="mt-2 space-y-2 text-xs">
+                  <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2">
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">no</code>
+                    <span class="text-dock-muted py-1">預設值，不自動重啟</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">always</code>
+                    <span class="text-dock-muted py-1">無論什麼原因停止都重啟</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">on-failure</code>
+                    <span class="text-dock-muted py-1">只在非正常退出（exit code 非 0）時重啟</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">unless-stopped</code>
+                    <span class="text-dock-muted py-1">除非手動停止，否則一律重啟（最常用）</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- networks -->
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-red/30 transition-colors duration-200" data-cmd="networks network compose 網路" data-desc="networks 自訂網路配置">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-red font-medium">networks:</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">定義自訂網路，讓特定服務之間可以互通。在同一個網路裡的容器可以用「服務名稱」當作 hostname 互相連線。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 頂層：宣告網路</span></div>
+                  <div><span class="text-dock-red font-semibold">networks:</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-accent">frontend:</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-accent">backend:</span></div>
+                  <div class="pt-2"><span class="text-dock-dim"># 服務層：指定要加入哪些網路</span></div>
+                  <div><span class="text-dock-accent">api:</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-yellow">networks:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;- frontend</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;- backend</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- volumes (top-level) -->
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-red/30 transition-colors duration-200" data-cmd="volumes volume compose 資料 持久化" data-desc="volumes 頂層 volume 宣告">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-red font-medium">volumes:</code>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-dock-yellow/10 text-dock-yellow font-medium">頂層</span>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">在頂層宣告具名 volume，讓多個服務可以共用。具名 volume 的資料在 <code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">docker compose down</code> 時預設不會被刪除。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 頂層宣告</span></div>
+                  <div><span class="text-dock-red font-semibold">volumes:</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-accent">db-data:</span>&nbsp;&nbsp;<span class="text-dock-dim"># Docker 管理的具名 volume</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-accent">cache-data:</span></div>
+                  <div class="pt-2"><span class="text-dock-dim"># 服務中使用</span></div>
+                  <div><span class="text-dock-accent">db:</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-yellow">volumes:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;- db-data:/var/lib/postgresql/data&nbsp;&nbsp;<span class="text-dock-dim"># 具名 volume</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;- ./init.sql:/docker-entrypoint-initdb.d/init.sql&nbsp;&nbsp;<span class="text-dock-dim"># bind mount</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- healthcheck -->
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-red/30 transition-colors duration-200" data-cmd="healthcheck health check 健康檢查" data-desc="healthcheck 容器健康檢查">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-red font-medium">healthcheck:</code>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-dock-accent/10 text-dock-accent font-medium">推薦搭配 depends_on</span>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">定義如何檢測容器是否「真正準備好了」，搭配 <code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">depends_on: condition: service_healthy</code> 非常實用。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-accent">db:</span></div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-yellow">image:</span> postgres:16-alpine</div>
+                  <div>&nbsp;&nbsp;<span class="text-dock-yellow">healthcheck:</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">test:</span> [<span class="text-dock-green">"CMD-SHELL"</span>, <span class="text-dock-green">"pg_isready -U admin"</span>]</div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">interval:</span> 10s&nbsp;&nbsp;<span class="text-dock-dim"># 每 10 秒檢查一次</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">timeout:</span> 5s&nbsp;&nbsp;&nbsp;<span class="text-dock-dim"># 超過 5 秒算失敗</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">retries:</span> 5&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-dim"># 連續失敗 5 次才標記為 unhealthy</span></div>
+                  <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-dock-yellow">start_period:</span> 30s&nbsp;&nbsp;<span class="text-dock-dim"># 啟動後等 30 秒才開始檢查</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 其他常用欄位 -->
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-red/30 transition-colors duration-200" data-cmd="command entrypoint container_name working_dir stdin_open tty" data-desc="其他常用欄位">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-red font-medium">其他常用欄位</code>
+                </div>
+                <div class="mt-2 space-y-2 text-xs">
+                  <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2">
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">command:</code>
+                    <span class="text-dock-muted py-1">覆蓋容器啟動時的預設指令（覆蓋 Dockerfile 的 CMD）</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">entrypoint:</code>
+                    <span class="text-dock-muted py-1">覆蓋容器的 entrypoint（覆蓋 Dockerfile 的 ENTRYPOINT）</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">container_name:</code>
+                    <span class="text-dock-muted py-1">自訂容器名稱（預設會自動加上專案前綴）</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">working_dir:</code>
+                    <span class="text-dock-muted py-1">設定容器內的工作目錄</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">stdin_open: true</code>
+                    <span class="text-dock-muted py-1">相當於 <code class="text-dock-text bg-dock-surface2 px-1 rounded">docker run -i</code>，保持 stdin 開啟</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">tty: true</code>
+                    <span class="text-dock-muted py-1">相當於 <code class="text-dock-text bg-dock-surface2 px-1 rounded">docker run -t</code>，分配虛擬終端</span>
+                    <code class="text-dock-yellow bg-dock-bg px-2 py-1 rounded font-mono">profiles:</code>
+                    <span class="text-dock-muted py-1">給服務加上 profile 標籤，用 <code class="text-dock-text bg-dock-surface2 px-1 rounded">--profile debug</code> 才啟動</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== Section: 清理 ===== -->
+      <section id="cleanup" class="cmd-section mb-12 scroll-mt-20 lg:scroll-mt-8">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="w-2 h-2 rounded-full bg-dock-dim"></span>
+          <h2 class="text-xl font-bold">清理與維護</h2>
+        </div>
+        <p class="text-sm text-dock-muted mb-4 -mt-2">Docker 會累積許多不再使用的資源，定期清理可以釋放磁碟空間。</p>
+        <div class="space-y-3">
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-dim/50 transition-colors duration-200" data-cmd="docker system prune" data-desc="一鍵清理未使用的資源">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-text font-medium">docker system prune [選項]</code>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-dock-red/10 text-dock-red font-medium">注意</span>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">一次清除所有未使用的容器、網路、懸空映像檔。加 <code class="text-dock-text bg-dock-surface2 px-1 rounded text-xs">-a</code> 會連未使用的映像檔也一起刪。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 基本清理</span></div>
+                  <div><span class="text-dock-yellow">docker system prune</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 深度清理（含未使用的映像檔和 volume）</span></div>
+                  <div><span class="text-dock-yellow">docker system prune</span> <span class="text-dock-accent">-a --volumes</span></div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-text hover:bg-dock-surface2 transition-colors duration-200" data-copy="docker system prune" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-dim/50 transition-colors duration-200" data-cmd="docker system df docker stats" data-desc="查看磁碟使用量和即時狀態">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <code class="font-mono text-sm text-dock-text font-medium">docker system df / docker stats</code>
+                </div>
+                <p class="text-sm text-dock-muted mb-3">查看 Docker 佔用多少磁碟空間，或即時監控容器的資源使用量。</p>
+                <div class="bg-dock-bg rounded-lg p-3 font-mono text-xs space-y-1.5 overflow-x-auto">
+                  <div><span class="text-dock-dim"># 查看磁碟使用量</span></div>
+                  <div><span class="text-dock-yellow">docker system df</span></div>
+                  <div class="pt-1"><span class="text-dock-dim"># 即時監控容器的 CPU / 記憶體使用</span></div>
+                  <div><span class="text-dock-yellow">docker stats</span></div>
+                </div>
+              </div>
+              <button class="copy-btn relative cursor-pointer flex-shrink-0 p-2 rounded-lg text-dock-dim hover:text-dock-text hover:bg-dock-surface2 transition-colors duration-200" data-copy="docker system df" aria-label="複製指令" data-tooltip="複製">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <svg class="w-4 h-4 text-dock-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== Section: Dockerfile ===== -->
+      <section id="dockerfile" class="cmd-section mb-12 scroll-mt-20 lg:scroll-mt-8">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="w-2 h-2 rounded-full bg-dock-accent opacity-60"></span>
+          <h2 class="text-xl font-bold">Dockerfile 常用指令</h2>
+        </div>
+        <p class="text-sm text-dock-muted mb-4 -mt-2">Dockerfile 是用來定義如何建構映像檔的腳本。以下是最常用的指令。</p>
+        <div class="space-y-3">
+
+          <div class="cmd-card group bg-dock-surface border border-dock-surface2 rounded-xl p-4 hover:border-dock-accent/20 transition-colors duration-200" data-cmd="FROM RUN COPY WORKDIR CMD EXPOSE ENV" data-desc="Dockerfile 常用關鍵字">
+            <div class="flex-1 min-w-0">
+              <div class="bg-dock-bg rounded-lg p-4 font-mono text-xs space-y-1 overflow-x-auto">
+                <div><span class="text-dock-dim"># 指定基底映像檔</span></div>
+                <div><span class="text-dock-accent font-semibold">FROM</span> node:18-alpine</div>
+                <div class="pt-2"><span class="text-dock-dim"># 設定工作目錄</span></div>
+                <div><span class="text-dock-accent font-semibold">WORKDIR</span> /app</div>
+                <div class="pt-2"><span class="text-dock-dim"># 複製檔案到映像檔中</span></div>
+                <div><span class="text-dock-accent font-semibold">COPY</span> package*.json ./</div>
+                <div class="pt-2"><span class="text-dock-dim"># 在建構時執行指令</span></div>
+                <div><span class="text-dock-accent font-semibold">RUN</span> npm install</div>
+                <div class="pt-2"><span class="text-dock-dim"># 複製其餘原始碼</span></div>
+                <div><span class="text-dock-accent font-semibold">COPY</span> . .</div>
+                <div class="pt-2"><span class="text-dock-dim"># 設定環境變數</span></div>
+                <div><span class="text-dock-accent font-semibold">ENV</span> NODE_ENV=production</div>
+                <div class="pt-2"><span class="text-dock-dim"># 宣告容器對外的 port（文件用途）</span></div>
+                <div><span class="text-dock-accent font-semibold">EXPOSE</span> 3000</div>
+                <div class="pt-2"><span class="text-dock-dim"># 容器啟動時預設執行的指令</span></div>
+                <div><span class="text-dock-accent font-semibold">CMD</span> ["node", "server.js"]</div>
+              </div>
+              <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-dock-dim">
+                <div><code class="text-dock-accent">FROM</code> — 基底映像檔（必須是第一行）</div>
+                <div><code class="text-dock-accent">WORKDIR</code> — 後續指令的工作目錄</div>
+                <div><code class="text-dock-accent">COPY</code> — 複製本地檔案到映像檔</div>
+                <div><code class="text-dock-accent">RUN</code> — 建構期間執行指令</div>
+                <div><code class="text-dock-accent">ENV</code> — 設定環境變數</div>
+                <div><code class="text-dock-accent">EXPOSE</code> — 宣告 port（說明文件用途）</div>
+                <div><code class="text-dock-accent">CMD</code> — 容器啟動預設指令</div>
+                <div><code class="text-dock-accent">ENTRYPOINT</code> — 容器啟動固定指令</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Back to top -->
+      <button id="backToTop" class="fixed bottom-6 right-6 z-40 w-10 h-10 bg-dock-surface border border-dock-surface2 rounded-full flex items-center justify-center text-dock-muted hover:text-dock-accent hover:border-dock-accent/30 transition-all duration-200 cursor-pointer opacity-0 pointer-events-none" aria-label="回到頂部">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+      </button>
+
+    </div>
+  </main>
+
+  <script>
+    // ── Copy to Clipboard ──
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const text = btn.dataset.copy;
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.classList.add('copied');
+          btn.setAttribute('data-tooltip', '已複製!');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.setAttribute('data-tooltip', '複製');
+          }, 1500);
+        } catch {
+          // Fallback
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          btn.classList.add('copied');
+          setTimeout(() => btn.classList.remove('copied'), 1500);
+        }
+      });
+    });
+
+    // ── TOC Active State ──
+    const tocLinks = document.querySelectorAll('.toc-link');
+    const sections = document.querySelectorAll('.cmd-section');
+
+    function updateActiveToc() {
+      let current = '';
+      sections.forEach(section => {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= 120) current = section.id;
+      });
+      tocLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
+      });
+    }
+    window.addEventListener('scroll', updateActiveToc, { passive: true });
+    updateActiveToc();
+
+    // ── Search ──
+    const searchInput = document.getElementById('searchInput');
+    const searchHint = document.getElementById('searchHint');
+    const cmdCards = document.querySelectorAll('.cmd-card');
+
+    function clearHighlights() {
+      document.querySelectorAll('mark').forEach(m => {
+        const parent = m.parentNode;
+        parent.replaceChild(document.createTextNode(m.textContent), m);
+        parent.normalize();
+      });
+    }
+
+    function highlightText(node, term) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const idx = node.textContent.toLowerCase().indexOf(term.toLowerCase());
+        if (idx === -1) return;
+        const mark = document.createElement('mark');
+        const match = node.splitText(idx);
+        match.splitText(term.length);
+        mark.appendChild(match.cloneNode(true));
+        match.parentNode.replaceChild(mark, match);
+      } else if (node.nodeType === Node.ELEMENT_NODE && !['SCRIPT', 'STYLE', 'MARK', 'INPUT'].includes(node.tagName)) {
+        Array.from(node.childNodes).forEach(child => highlightText(child, term));
+      }
+    }
+
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.trim().toLowerCase();
+      clearHighlights();
+
+      if (!term) {
+        cmdCards.forEach(card => { card.style.display = ''; });
+        sections.forEach(s => { s.style.display = ''; });
+        searchHint.classList.add('hidden');
+        return;
+      }
+
+      let visible = 0;
+      cmdCards.forEach(card => {
+        const cmd = (card.dataset.cmd || '').toLowerCase();
+        const desc = (card.dataset.desc || '').toLowerCase();
+        const text = card.textContent.toLowerCase();
+        const match = cmd.includes(term) || desc.includes(term) || text.includes(term);
+        card.style.display = match ? '' : 'none';
+        if (match) {
+          visible++;
+          highlightText(card, term);
+        }
+      });
+
+      sections.forEach(section => {
+        const hasVisible = section.querySelectorAll('.cmd-card:not([style*="display: none"])').length > 0;
+        section.style.display = hasVisible ? '' : 'none';
+      });
+
+      searchHint.textContent = visible > 0
+        ? `找到 ${visible} 個相關指令`
+        : `找不到「${searchInput.value}」相關的指令，試試其他關鍵字`;
+      searchHint.classList.remove('hidden');
+    });
+
+    // Ctrl+K shortcut
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+      }
+      if (e.key === 'Escape' && document.activeElement === searchInput) {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input'));
+        searchInput.blur();
+      }
+    });
+
+    // ── Mobile Sidebar ──
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const menuBtn = document.getElementById('menuBtn');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      overlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      overlay.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    menuBtn.addEventListener('click', openSidebar);
+    overlay.addEventListener('click', closeSidebar);
+    tocLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth < 1024) closeSidebar();
+      });
+    });
+
+    // ── Back to Top ──
+    const backToTop = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => {
+      const show = window.scrollY > 400;
+      backToTop.style.opacity = show ? '1' : '0';
+      backToTop.style.pointerEvents = show ? 'auto' : 'none';
+    }, { passive: true });
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-dock-bg: #0F172A;
+  --color-dock-surface: #1E293B;
+  --color-dock-surface2: #334155;
+  --color-dock-accent: #38BDF8;
+  --color-dock-green: #22C55E;
+  --color-dock-yellow: #FACC15;
+  --color-dock-red: #F87171;
+  --color-dock-purple: #A78BFA;
+  --color-dock-orange: #FB923C;
+  --color-dock-text: #F8FAFC;
+  --color-dock-muted: #94A3B8;
+  --color-dock-dim: #64748B;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0F172A; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* TOC active link */
+.toc-link.active {
+  color: #38BDF8;
+  border-left-color: #38BDF8;
+  background: rgba(56, 189, 248, 0.08);
+}
+
+/* Copy button feedback */
+.copy-btn.copied svg:first-child { display: none; }
+.copy-btn.copied svg:last-child { display: block; }
+.copy-btn svg:last-child { display: none; }
+
+/* Search highlight */
+mark {
+  background: rgba(56, 189, 248, 0.25);
+  color: #F8FAFC;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* Smooth code block */
+pre { tab-size: 2; }
+
+/* Tooltip */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1E293B;
+  color: #F8FAFC;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 50;
+  border: 1px solid #334155;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
