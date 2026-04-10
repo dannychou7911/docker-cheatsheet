@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 const topics = [
   { name: 'Docker', to: '/docker' },
   { name: 'k9s', to: '/k9s' },
+  { name: 'Git', to: '/git' },
 ]
 </script>
 

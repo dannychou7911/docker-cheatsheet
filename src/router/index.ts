@@ -20,6 +20,11 @@ const router = createRouter({
       component: () => import('@/views/K9sView.vue'),
     },
     {
+      path: '/git',
+      name: 'git',
+      component: () => import('@/views/GitView.vue'),
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: '/',
     },
