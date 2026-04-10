@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Concept, SectionColor } from '@/data/types'
+import MermaidDiagram from './MermaidDiagram.vue'
 
 defineProps<{
   concept: Concept
@@ -36,6 +37,7 @@ const titleColorMap: Record<SectionColor, string> = {
       {{ concept.title }}
     </h3>
     <p class="text-sm text-dock-muted">{{ concept.desc }}</p>
+    <MermaidDiagram v-if="concept.diagram" :code="concept.diagram" />
     <ul
       v-if="concept.details && concept.details.length > 0"
       class="mt-3 space-y-1"

@@ -11,6 +11,7 @@
     "test:run": "vitest run"
   },
   "dependencies": {
+    "mermaid": "^11.14.0",
     "vue": "^3.5.0",
     "vue-router": "^4.5.0"
   },

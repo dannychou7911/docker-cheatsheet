@@ -21,6 +21,7 @@ export interface Concept {
   title: string
   desc: string
   details?: string[]
+  diagram?: string
 }
 
 export type SectionColor = 'accent' | 'green' | 'purple' | 'yellow' | 'orange' | 'red' | 'dim'
