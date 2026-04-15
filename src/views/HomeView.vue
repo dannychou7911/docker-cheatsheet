@@ -3,6 +3,7 @@ import TopicCard from '@/components/home/TopicCard.vue'
 import { dockerTopic } from '@/data/docker'
 import { k9sTopic } from '@/data/k9s'
 import { gitTopic } from '@/data/git'
+import { nanobananaTopic } from '@/data/nanobanana'
 
 function countItems(topic: typeof dockerTopic) {
   return topic.sections.reduce(
@@ -32,6 +33,13 @@ const topics = [
     to: '/git',
     sectionCount: gitTopic.sections.length,
     commandCount: countItems(gitTopic),
+  },
+  {
+    title: nanobananaTopic.title,
+    description: nanobananaTopic.description,
+    to: '/nanobanana',
+    sectionCount: nanobananaTopic.sections.length,
+    commandCount: countItems(nanobananaTopic),
   },
 ]
 </script>

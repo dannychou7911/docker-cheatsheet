@@ -25,6 +25,11 @@ const router = createRouter({
       component: () => import('@/views/GitView.vue'),
     },
     {
+      path: '/nanobanana',
+      name: 'nanobanana',
+      component: () => import('@/views/NanoBananaView.vue'),
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: '/',
     },

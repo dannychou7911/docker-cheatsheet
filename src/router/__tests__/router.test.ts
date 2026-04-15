@@ -21,6 +21,11 @@ describe('Router', () => {
     expect(router.currentRoute.value.name).toBe('k9s')
   })
 
+  it('should navigate to NanoBananaView on /nanobanana', async () => {
+    await router.push('/nanobanana')
+    expect(router.currentRoute.value.name).toBe('nanobanana')
+  })
+
   it('should redirect unknown routes to home', async () => {
     await router.push('/unknown-page')
     expect(router.currentRoute.value.path).toBe('/')

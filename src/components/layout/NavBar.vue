@@ -5,6 +5,7 @@ const topics = [
   { name: 'Docker', to: '/docker' },
   { name: 'k9s', to: '/k9s' },
   { name: 'Git', to: '/git' },
+  { name: 'Nano Banana', to: '/nanobanana' },
 ]
 </script>
 
